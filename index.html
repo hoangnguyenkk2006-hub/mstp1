@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101a2a">
+  <meta name="description" content="Ứng dụng giám sát và điều khiển máy sấy thực phẩm qua mạng nội bộ.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>Food Dryer Control</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1220;--panel:#131f32;--panel2:#19283e;--line:#2a3b55;--txt:#edf3fb;--muted:#9aabc1;--cyan:#42c6df;--green:#39c995;--amber:#e8c56d}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+    header{position:sticky;top:0;z-index:5;background:rgba(16,26,42,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 16px}
+    .head{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:800;letter-spacing:.4px;font-size:16px}.sub{color:var(--muted);font-size:11px;margin-top:3px}
+    .connection{font-size:10px;color:var(--amber);border:1px solid #66552d;border-radius:20px;padding:7px 9px;white-space:nowrap}
+    main{max-width:760px;margin:auto;padding:16px 14px 28px}.intro{margin:8px 2px 18px}.intro h1{font-size:21px;margin:0 0 5px}.intro p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+    .section-title{font-size:11px;font-weight:800;letter-spacing:1.1px;color:#c9d7e9;margin:22px 2px 10px}
+    .sensors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px;min-width:0}
+    .sensor-label{font-size:11px;color:var(--muted);line-height:1.35}.sensor-value{font-size:29px;font-weight:800;letter-spacing:-.8px;margin:10px 0 4px;color:#d9e4f2}.sensor-unit{font-size:14px;color:var(--muted);font-weight:600}.sensor-meta{font-size:10px;color:var(--muted)}
+    .device-list{display:grid;gap:10px}.device{display:flex;align-items:center;justify-content:space-between;gap:12px}.device-info{min-width:0}.device-name{font-weight:700;font-size:14px}.device-meta{font-size:11px;color:var(--muted);margin-top:4px}.chip{font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:5px 8px;white-space:nowrap}
+    button,input{font:inherit}button{border:0;border-radius:10px;padding:11px 13px;font-weight:750;background:var(--cyan);color:#07131b;min-height:42px}button:disabled,input:disabled{opacity:.38;cursor:not-allowed}button.secondary{background:#32445d;color:var(--txt)}button.danger{background:#743d48;color:white}
+    .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1;min-width:72px;font-size:12px}
+    .range-wrap{margin-top:12px}.range-line{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:8px}input[type=range]{width:100%;accent-color:var(--cyan)}
+    .setpoint{display:flex;gap:8px;margin-top:12px}.setpoint input{min-width:0;flex:1;background:#0c1727;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:11px}
+    .chart-empty{height:145px;border:1px dashed var(--line);border-radius:11px;display:grid;place-items:center;text-align:center;padding:15px;color:var(--muted);font-size:12px}
+    .notice{margin-top:18px;padding:13px;border:1px solid #66552d;background:#292417;border-radius:12px;color:#e8d69d;font-size:11px;line-height:1.55}
+    .bottom-nav{position:fixed;z-index:8;bottom:0;left:0;right:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(16,26,42,.97);border-top:1px solid var(--line);display:flex;justify-content:space-around}
+    .bottom-nav a{color:var(--muted);text-decoration:none;font-size:10px;text-align:center;min-width:60px;padding:5px}.bottom-nav span{display:block;font-size:18px;margin-bottom:3px}
+    @media(min-width:620px){main{padding:24px}.sensors{grid-template-columns:repeat(4,minmax(0,1fr))}.device-list{grid-template-columns:repeat(2,minmax(0,1fr))}.intro h1{font-size:25px}}
+  </style>
+</head>
+<body>
+<header><div class="head"><div><div class="brand">FOOD DRYER</div><div class="sub">GIÁM SÁT & ĐIỀU KHIỂN · MODBUS RTU</div></div><div class="connection" id="connectionState">CHƯA KẾT NỐI</div></div></header>
+<main>
+  <section class="intro"><h1>Tổng quan máy sấy</h1><p>Ứng dụng truy cập máy chủ nội bộ trên PC. Giao diện chưa kết nối phần cứng nên không hiển thị dữ liệu hoặc gửi lệnh.</p></section>
+
+  <div class="section-title" id="monitor">01 · THÔNG SỐ CẢM BIẾN</div>
+  <section class="sensors">
+    <article class="card"><div class="sensor-label">NHIỆT ĐỘ BUỒNG SẤY</div><div class="sensor-value">--<span class="sensor-unit"> °C</span></div><div class="sensor-meta">XY-MD02 · Chưa có dữ liệu</div></article>
+    <article class="card"><div class="sensor-label">ĐỘ ẨM BUỒNG SẤY</div><div class="sensor-value">--<span class="sensor-unit"> %</span></div><div class="sensor-meta">XY-MD02 · Chưa có dữ liệu</div></article>
+    <article class="card"><div class="sensor-label">ÁP SUẤT</div><div class="sensor-value">--<span class="sensor-unit"> kPa</span></div><div class="sensor-meta">CT-P001 · 0–5 kPa</div></article>
+    <article class="card"><div class="sensor-label">NHIỆT ĐỘ ĐẶT</div><div class="sensor-value">--<span class="sensor-unit"> °C</span></div><div class="sensor-meta">Chưa cấu hình</div></article>
+  </section>
+
+  <div class="section-title" id="devices">02 · THIẾT BỊ CHẤP HÀNH</div>
+  <section class="device-list">
+    <article class="card"><div class="device"><div class="device-info"><div class="device-name">Quạt chính</div><div class="device-meta">PWM Output · CH1</div></div><span class="chip">Chưa kết nối</span></div><div class="range-wrap"><div class="range-line"><span>Tốc độ quạt</span><b>-- %</b></div><input type="range" min="0" max="100" value="0" disabled></div><div class="actions"><button disabled>Gửi tốc độ</button><button class="secondary" disabled>BẬT</button><button class="danger" disabled>TẮT</button></div></article>
+    <article class="card"><div class="device"><div class="device-info"><div class="device-name">Gia nhiệt chính</div><div class="device-meta">PWM Output · CH2 / PTC</div></div><span class="chip">Chưa kết nối</span></div><div class="actions"><button disabled>BẬT</button><button class="danger" disabled>TẮT</button></div></article>
+    <article class="card"><div class="device"><div class="device-info"><div class="device-name">Quạt dự phòng</div><div class="device-meta">PWM Output · CH3</div></div><span class="chip">Chưa kết nối</span></div><div class="range-wrap"><div class="range-line"><span>Tốc độ quạt</span><b>-- %</b></div><input type="range" min="0" max="100" value="0" disabled></div><div class="actions"><button disabled>Gửi tốc độ</button><button class="secondary" disabled>BẬT</button><button class="danger" disabled>TẮT</button></div></article>
+    <article class="card"><div class="device"><div class="device-info"><div class="device-name">Gia nhiệt dự phòng</div><div class="device-meta">PWM Output · CH4 / PTC</div></div><span class="chip">Chưa kết nối</span></div><div class="actions"><button disabled>BẬT</button><button class="danger" disabled>TẮT</button></div></article>
+  </section>
+
+  <div class="section-title" id="relay">03 · RELAY MODBUS RTU</div>
+  <section class="device-list">
+    <article class="card"><div class="device"><b>Relay 1</b><span class="chip">Kênh 1 · Chưa kết nối</span></div><div class="actions"><button disabled>BẬT</button><button class="danger" disabled>TẮT</button></div></article>
+    <article class="card"><div class="device"><b>Relay 2</b><span class="chip">Kênh 2 · Chưa kết nối</span></div><div class="actions"><button disabled>BẬT</button><button class="danger" disabled>TẮT</button></div></article>
+  </section>
+
+  <div class="section-title" id="settings">04 · CÀI ĐẶT QUÁ TRÌNH</div>
+  <section class="card"><div class="device"><div><b>Nhiệt độ mục tiêu</b><div class="device-meta">Giá trị đặt cho quá trình sấy</div></div><span class="chip">Chưa cấu hình</span></div><div class="setpoint"><input type="number" placeholder="Nhiệt độ °C" disabled><button disabled>ÁP DỤNG</button></div></section>
+
+  <div class="section-title" id="charts">05 · BIỂU ĐỒ</div>
+  <section class="device-list"><article class="card"><b>Nhiệt độ và độ ẩm</b><div class="chart-empty" style="margin-top:12px">Chưa có dữ liệu cảm biến</div></article><article class="card"><b>Áp suất</b><div class="chart-empty" style="margin-top:12px">Chưa có dữ liệu cảm biến</div></article></section>
+  <div class="notice">Đây là bản PWA giao diện tĩnh. Chưa có dữ liệu giả lập, chưa gửi lệnh Modbus và các nút đang khóa có chủ ý. Service Worker chỉ lưu bộ khung giao diện để mở lại khi offline; muốn giám sát/điều khiển cần PC và mạng nội bộ vẫn hoạt động. Bảo vệ quá nhiệt phải độc lập bằng phần cứng.</div>
+</main>
+<nav class="bottom-nav"><a href="#monitor"><span>◉</span>Giám sát</a><a href="#devices"><span>⚙</span>Thiết bị</a><a href="#relay"><span>▣</span>Relay</a><a href="#settings"><span>⌁</span>Cài đặt</a><a href="#charts"><span>▥</span>Biểu đồ</a></nav>
+<script>
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  }
+  window.addEventListener("online", () => {
+    const el = document.getElementById("connectionState");
+    if (el) el.textContent = "CÓ KẾT NỐI MẠNG";
+  });
+  window.addEventListener("offline", () => {
+    const el = document.getElementById("connectionState");
+    if (el) el.textContent = "OFFLINE";
+  });
+</script>
+</body>
+</html>
